@@ -1,0 +1,37 @@
+{
+  "name": "@ethereum-attestation-service/eas-cli",
+  "version": "0.1.0",
+  "description": "CLI tool for the Ethereum Attestation Service — create, revoke, and query attestations from the command line",
+  "bin": {
+    "eas": "./dist/index.js"
+  },
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "start": "node dist/index.js",
+    "typecheck": "tsc --noEmit"
+  },
+  "keywords": [
+    "ethereum",
+    "attestation",
+    "eas",
+    "cli",
+    "ethers",
+    "web3"
+  ],
+  "author": "Ethereum Attestation Service",
+  "license": "MIT",
+  "dependencies": {
+    "@ethereum-attestation-service/eas-sdk": "^2.9.0",
+    "commander": "^13.1.0",
+    "ethers": "^6.16.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "tsup": "^8.4.0",
+    "typescript": "^5.7.0"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
