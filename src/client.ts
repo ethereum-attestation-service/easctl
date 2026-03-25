@@ -1,6 +1,7 @@
 import { ethers } from 'ethers';
 import { EAS, SchemaRegistry } from '@ethereum-attestation-service/eas-sdk';
 import { getChainConfig, type ChainConfig } from './chains.js';
+import { getStoredPrivateKey } from './config.js';
 
 export interface EASClient {
   eas: EAS;
@@ -12,10 +13,10 @@ export interface EASClient {
 }
 
 export function getPrivateKey(): string {
-  const key = process.env.EAS_PRIVATE_KEY;
+  const key = process.env.EAS_PRIVATE_KEY || getStoredPrivateKey();
   if (!key) {
     throw new Error(
-      'EAS_PRIVATE_KEY environment variable is required. Set it to your wallet private key (with 0x prefix).'
+      'No private key found. Set one with: eas set-key <key>  (or set EAS_PRIVATE_KEY env var)'
     );
   }
   return key.startsWith('0x') ? key : `0x${key}`;

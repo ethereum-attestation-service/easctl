@@ -38,6 +38,11 @@ const mockEASConstructor = vi.fn();
 const mockSchemaRegistryConstructor = vi.fn();
 
 import { getPrivateKey, createEASClient, createReadOnlyEASClient } from '../client.js';
+import { getStoredPrivateKey } from '../config.js';
+
+vi.mock('../config.js', () => ({
+  getStoredPrivateKey: vi.fn(),
+}));
 
 describe('client module', () => {
   const originalEnv = process.env.EAS_PRIVATE_KEY;
@@ -63,12 +68,30 @@ describe('client module', () => {
 
     it('throws when env var is not set', () => {
       delete process.env.EAS_PRIVATE_KEY;
-      expect(() => getPrivateKey()).toThrow('EAS_PRIVATE_KEY environment variable is required');
+      expect(() => getPrivateKey()).toThrow('No private key found');
     });
 
     it('throws when env var is empty string', () => {
       process.env.EAS_PRIVATE_KEY = '';
-      expect(() => getPrivateKey()).toThrow('EAS_PRIVATE_KEY environment variable is required');
+      expect(() => getPrivateKey()).toThrow('No private key found');
+    });
+
+    it('falls back to stored key when env var not set', () => {
+      delete process.env.EAS_PRIVATE_KEY;
+      vi.mocked(getStoredPrivateKey).mockReturnValue('0xstoredkey');
+      expect(getPrivateKey()).toBe('0xstoredkey');
+    });
+
+    it('env var takes priority over stored key', () => {
+      process.env.EAS_PRIVATE_KEY = '0xenvkey';
+      vi.mocked(getStoredPrivateKey).mockReturnValue('0xstoredkey');
+      expect(getPrivateKey()).toBe('0xenvkey');
+    });
+
+    it('throws when both env var and stored key are missing', () => {
+      delete process.env.EAS_PRIVATE_KEY;
+      vi.mocked(getStoredPrivateKey).mockReturnValue(undefined);
+      expect(() => getPrivateKey()).toThrow('No private key found');
     });
   });
 

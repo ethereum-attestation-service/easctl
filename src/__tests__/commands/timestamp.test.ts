@@ -41,6 +41,15 @@ describe('timestamp command', () => {
     });
   });
 
+  it('passes SDK errors to handleError', async () => {
+    mockTimestamp.mockRejectedValueOnce(new Error('nonce too low'));
+    await runCommand(['-d', '0x1234']);
+    const { handleError } = await import('../../output.js');
+    expect(handleError).toHaveBeenCalledWith(expect.any(Error));
+    const err = (handleError as any).mock.calls[0][0] as Error;
+    expect(err.message).toBe('nonce too low');
+  });
+
   it('uses specified chain', async () => {
     const { createEASClient } = await import('../../client.js');
     await runCommand(['-d', '0x1234', '-c', 'base']);

@@ -16,7 +16,7 @@ vi.mock('../../output.js', () => ({
 }));
 
 import { revokeCommand } from '../../commands/revoke.js';
-import { output } from '../../output.js';
+import { output, handleError } from '../../output.js';
 
 describe('revoke command', () => {
   beforeEach(() => vi.clearAllMocks());
@@ -41,6 +41,14 @@ describe('revoke command', () => {
         chain: 'ethereum',
       },
     });
+  });
+
+  it('passes SDK errors to handleError', async () => {
+    mockRevoke.mockRejectedValue(new Error('revocation failed'));
+    await runCommand(['-s', '0xschema', '-u', '0xuid']);
+    expect(handleError).toHaveBeenCalledWith(expect.any(Error));
+    const err = (handleError as any).mock.calls[0][0] as Error;
+    expect(err.message).toBe('revocation failed');
   });
 
   it('passes custom value as BigInt', async () => {

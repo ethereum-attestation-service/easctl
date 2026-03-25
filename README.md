@@ -18,7 +18,21 @@ npx @ethereum-attestation-service/eas-cli --help
 
 ## Configuration
 
-Set your private key as an environment variable:
+Store your private key for persistent use:
+
+```bash
+eas set-key 0xYourPrivateKeyHere
+```
+
+This saves the key to `~/.eas-cli` (file permissions `0600`, owner-only). The command displays your wallet address for confirmation.
+
+To remove the stored key:
+
+```bash
+eas clear-key
+```
+
+Alternatively, set the `EAS_PRIVATE_KEY` environment variable. When set, it takes priority over the stored key:
 
 ```bash
 export EAS_PRIVATE_KEY=0xYourPrivateKeyHere
@@ -94,6 +108,16 @@ eas schema-get \
 eas timestamp \
   --data 0xBytes32Data \
   --chain sepolia
+```
+
+### Manage Private Key
+
+```bash
+# Store your private key
+eas set-key 0xYourPrivateKeyHere
+
+# Remove the stored key
+eas clear-key
 ```
 
 ### List Supported Chains

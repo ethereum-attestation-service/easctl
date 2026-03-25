@@ -51,6 +51,9 @@ describe('attest command', () => {
 
     expect(createEASClient).toHaveBeenCalledWith('ethereum', undefined);
     expect(mockSchemaEncoderConstructor).toHaveBeenCalledWith('uint256 score');
+    expect(mockEncodeData).toHaveBeenCalledWith([
+      { name: 'score', type: 'uint256', value: '100' },
+    ]);
     expect(mockAttest).toHaveBeenCalledWith({
       schema: '0xschema',
       data: expect.objectContaining({
@@ -151,6 +154,17 @@ describe('attest command', () => {
         data: expect.objectContaining({ revocable: false }),
       })
     );
+  });
+
+  it('passes SDK errors to handleError', async () => {
+    mockAttest.mockRejectedValueOnce(new Error('insufficient funds'));
+    await runCommand([
+      '-s', '0xschema',
+      '-d', '[{"name":"x","type":"uint8","value":"1"}]',
+    ]);
+    expect(handleError).toHaveBeenCalledWith(expect.any(Error));
+    const err = (handleError as any).mock.calls[0][0] as Error;
+    expect(err.message).toBe('insufficient funds');
   });
 
   it('builds schema string from multiple data items', async () => {

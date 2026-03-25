@@ -59,6 +59,7 @@ describe('query-attestations command', () => {
 
     await runCommand(['-s', '0xschema', '-a', '0xAttester']);
 
+    expect(graphqlQuery).toHaveBeenCalledTimes(1);
     expect(graphqlQuery).toHaveBeenCalledWith(
       'ethereum',
       QUERIES.getAttestationsBySchema,

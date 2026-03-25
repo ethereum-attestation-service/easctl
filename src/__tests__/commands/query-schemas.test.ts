@@ -13,7 +13,7 @@ vi.mock('../../output.js', () => ({
 }));
 
 import { querySchemasCommand } from '../../commands/query-schemas.js';
-import { graphqlQuery } from '../../graphql.js';
+import { graphqlQuery, QUERIES } from '../../graphql.js';
 import { output } from '../../output.js';
 
 describe('query-schemas command', () => {
@@ -30,7 +30,7 @@ describe('query-schemas command', () => {
 
     await runCommand(['-a', '0xCreator']);
 
-    expect(graphqlQuery).toHaveBeenCalledWith('ethereum', expect.any(String), {
+    expect(graphqlQuery).toHaveBeenCalledWith('ethereum', QUERIES.getSchemata, {
       creator: '0xCreator',
       take: 10,
     });
@@ -47,7 +47,7 @@ describe('query-schemas command', () => {
 
     expect(graphqlQuery).toHaveBeenCalledWith(
       'ethereum',
-      expect.any(String),
+      QUERIES.getSchemata,
       expect.objectContaining({ take: 50 })
     );
   });
@@ -74,11 +74,20 @@ describe('query-schemas command', () => {
     });
   });
 
+  it('passes GraphQL errors to handleError', async () => {
+    (graphqlQuery as any).mockRejectedValue(new Error('network timeout'));
+    await runCommand(['-a', '0xCreator']);
+    const { handleError } = await import('../../output.js');
+    expect(handleError).toHaveBeenCalledWith(expect.any(Error));
+    const err = (handleError as any).mock.calls[0][0] as Error;
+    expect(err.message).toBe('network timeout');
+  });
+
   it('uses specified chain', async () => {
     (graphqlQuery as any).mockResolvedValue({ schemata: [] });
 
     await runCommand(['-a', '0xCreator', '-c', 'polygon']);
 
-    expect(graphqlQuery).toHaveBeenCalledWith('polygon', expect.any(String), expect.any(Object));
+    expect(graphqlQuery).toHaveBeenCalledWith('polygon', QUERIES.getSchemata, expect.any(Object));
   });
 });

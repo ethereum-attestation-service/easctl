@@ -51,6 +51,7 @@ describe('get-attestation command', () => {
   it('gets attestation by uid', async () => {
     await runCommand(['-u', '0xuid']);
 
+    expect(mockGetAttestation).toHaveBeenCalledWith('0xuid');
     expect(output).toHaveBeenCalledWith({
       success: true,
       data: expect.objectContaining({
@@ -111,6 +112,14 @@ describe('get-attestation command', () => {
     const outputCall = (output as any).mock.calls[0][0];
     expect(outputCall.data.decodeError).toBe('decode failed');
     expect(outputCall.data.decodedData).toBeUndefined();
+  });
+
+  it('passes SDK errors to handleError', async () => {
+    mockGetAttestation.mockRejectedValue(new Error('network error'));
+    await runCommand(['-u', '0xuid']);
+    expect(handleError).toHaveBeenCalledWith(expect.any(Error));
+    const err = (handleError as any).mock.calls[0][0] as Error;
+    expect(err.message).toBe('network error');
   });
 
   it('does not include decodedData when --decode not provided', async () => {

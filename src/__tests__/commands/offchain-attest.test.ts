@@ -54,6 +54,9 @@ describe('offchain-attest command', () => {
     ]);
 
     expect(mockGetOffchain).toHaveBeenCalled();
+    expect(mockEncodeData).toHaveBeenCalledWith([
+      { name: 'x', type: 'uint8', value: '1' },
+    ]);
 
     // Verify signOffchainAttestation was called with correct params
     const signCall = mockSignOffchainAttestation.mock.calls[0];
@@ -156,5 +159,42 @@ describe('offchain-attest command', () => {
     ]);
 
     expect(createEASClient).toHaveBeenCalledWith('sepolia', 'https://custom.rpc');
+  });
+
+  it('passes --ref-uid to signing params', async () => {
+    await runCommand([
+      '-s', '0xschema',
+      '-d', '[{"name":"x","type":"uint8","value":"1"}]',
+      '--ref-uid', '0xreferenceduid',
+    ]);
+
+    const params = mockSignOffchainAttestation.mock.calls[0][0];
+    expect(params.refUID).toBe('0xreferenceduid');
+  });
+
+  it('includes full attestation object in output', async () => {
+    const signedAttestation = { uid: '0xoffchainuid', sig: '0xsig', message: {} };
+    mockSignOffchainAttestation.mockResolvedValueOnce(signedAttestation);
+
+    await runCommand([
+      '-s', '0xschema',
+      '-d', '[{"name":"x","type":"uint8","value":"1"}]',
+    ]);
+
+    const outputCall = (output as any).mock.calls[0][0];
+    expect(outputCall.data.attestation).toBe(signedAttestation);
+  });
+
+  it('passes SDK errors to handleError', async () => {
+    mockGetOffchain.mockRejectedValueOnce(new Error('network unavailable'));
+
+    await runCommand([
+      '-s', '0xschema',
+      '-d', '[{"name":"x","type":"uint8","value":"1"}]',
+    ]);
+
+    expect(handleError).toHaveBeenCalledWith(expect.any(Error));
+    const err = (handleError as any).mock.calls[0][0] as Error;
+    expect(err.message).toBe('network unavailable');
   });
 });

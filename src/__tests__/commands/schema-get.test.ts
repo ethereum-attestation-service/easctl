@@ -46,6 +46,15 @@ describe('schema-get command', () => {
     });
   });
 
+  it('passes SDK errors to handleError', async () => {
+    mockGetSchema.mockRejectedValueOnce(new Error('contract not found'));
+    await runCommand(['-u', '0xschemauid']);
+    const { handleError } = await import('../../output.js');
+    expect(handleError).toHaveBeenCalledWith(expect.any(Error));
+    const err = (handleError as any).mock.calls[0][0] as Error;
+    expect(err.message).toBe('contract not found');
+  });
+
   it('uses specified chain', async () => {
     await runCommand(['-u', '0xschemauid', '-c', 'base']);
     expect(createReadOnlyEASClient).toHaveBeenCalledWith('base', undefined);

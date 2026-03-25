@@ -52,6 +52,15 @@ describe('schema-register command', () => {
     );
   });
 
+  it('passes SDK errors to handleError', async () => {
+    mockRegister.mockRejectedValueOnce(new Error('tx reverted'));
+    await runCommand(['-s', 'uint8 x']);
+    const { handleError } = await import('../../output.js');
+    expect(handleError).toHaveBeenCalledWith(expect.any(Error));
+    const err = (handleError as any).mock.calls[0][0] as Error;
+    expect(err.message).toBe('tx reverted');
+  });
+
   it('handles --no-revocable', async () => {
     await runCommand(['-s', 'uint8 x', '--no-revocable']);
     expect(mockRegister).toHaveBeenCalledWith(

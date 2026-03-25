@@ -13,6 +13,8 @@ import { querySchemaCommand } from './commands/query-schema.js';
 import { queryAttestationCommand } from './commands/query-attestation.js';
 import { queryAttestationsCommand } from './commands/query-attestations.js';
 import { querySchemasCommand } from './commands/query-schemas.js';
+import { setKeyCommand } from './commands/set-key.js';
+import { clearKeyCommand } from './commands/clear-key.js';
 
 const program = new Command();
 
@@ -47,6 +49,10 @@ program.addCommand(querySchemaCommand);
 program.addCommand(queryAttestationCommand);
 program.addCommand(queryAttestationsCommand);
 program.addCommand(querySchemasCommand);
+
+// Key management commands
+program.addCommand(setKeyCommand);
+program.addCommand(clearKeyCommand);
 
 // Chains command
 program

@@ -13,7 +13,7 @@ vi.mock('../../output.js', () => ({
 }));
 
 import { querySchemaCommand } from '../../commands/query-schema.js';
-import { graphqlQuery } from '../../graphql.js';
+import { graphqlQuery, QUERIES } from '../../graphql.js';
 import { output, handleError } from '../../output.js';
 
 describe('query-schema command', () => {
@@ -30,7 +30,7 @@ describe('query-schema command', () => {
 
     await runCommand(['-u', '0xschema']);
 
-    expect(graphqlQuery).toHaveBeenCalledWith('ethereum', expect.any(String), { id: '0xschema' });
+    expect(graphqlQuery).toHaveBeenCalledWith('ethereum', QUERIES.getSchema, { id: '0xschema' });
     expect(output).toHaveBeenCalledWith({
       success: true,
       data: { id: '0xschema', schema: 'uint256 score', creator: '0xCreator' },
@@ -53,6 +53,6 @@ describe('query-schema command', () => {
     });
 
     await runCommand(['-u', '0xschema', '-c', 'base']);
-    expect(graphqlQuery).toHaveBeenCalledWith('base', expect.any(String), expect.any(Object));
+    expect(graphqlQuery).toHaveBeenCalledWith('base', QUERIES.getSchema, { id: '0xschema' });
   });
 });

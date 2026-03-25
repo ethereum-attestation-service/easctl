@@ -71,7 +71,7 @@ describe('off-chain attestation signing integration', () => {
     expect(isValid).toBe(true);
   });
 
-  it('rejects tampered attestation signature', async () => {
+  it('rejects tampered attestation data', async () => {
     const schemaEncoder = new SchemaEncoder('string msg');
     const encodedData = schemaEncoder.encodeData([
       { name: 'msg', type: 'string', value: 'original' },
@@ -90,18 +90,25 @@ describe('off-chain attestation signing integration', () => {
       signer
     );
 
-    // Tamper with the message data
+    // Tamper with the message recipient
     const tampered = {
       ...signed,
       message: { ...signed.message, recipient: '0x0000000000000000000000000000000000000099' },
     };
 
-    // Verification should fail for a different attester or tampered data
-    const isValid = offchain.verifyOffchainAttestationSignature(
-      '0x0000000000000000000000000000000000000099', // wrong attester
+    // Tampered data should fail verification against the real signer
+    const isTamperedValid = offchain.verifyOffchainAttestationSignature(
+      signer.address,
+      tampered
+    );
+    expect(isTamperedValid).toBe(false);
+
+    // Wrong attester on untampered data should also fail
+    const isWrongAttesterValid = offchain.verifyOffchainAttestationSignature(
+      '0x0000000000000000000000000000000000000099',
       signed
     );
-    expect(isValid).toBe(false);
+    expect(isWrongAttesterValid).toBe(false);
   });
 
   it('different signers produce different signatures', async () => {

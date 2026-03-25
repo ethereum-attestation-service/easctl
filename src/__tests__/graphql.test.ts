@@ -102,28 +102,47 @@ describe('graphql module', () => {
   });
 
   describe('QUERIES', () => {
-    it('has getSchema query', () => {
-      expect(QUERIES.getSchema).toContain('GetSchema');
+    it('getSchema queries the schema root field with required fields', () => {
       expect(QUERIES.getSchema).toContain('$id: String!');
+      expect(QUERIES.getSchema).toMatch(/schema\s*\(\s*where:/);
+      expect(QUERIES.getSchema).toContain('schema');
+      expect(QUERIES.getSchema).toContain('creator');
+      expect(QUERIES.getSchema).toContain('resolver');
+      expect(QUERIES.getSchema).toContain('revocable');
     });
 
-    it('has getAttestation query', () => {
-      expect(QUERIES.getAttestation).toContain('GetAttestation');
+    it('getAttestation queries the attestation root field with required fields', () => {
+      expect(QUERIES.getAttestation).toContain('$id: String!');
+      expect(QUERIES.getAttestation).toMatch(/attestation\s*\(\s*where:/);
+      expect(QUERIES.getAttestation).toContain('attester');
+      expect(QUERIES.getAttestation).toContain('recipient');
       expect(QUERIES.getAttestation).toContain('decodedDataJson');
+      expect(QUERIES.getAttestation).toContain('schemaId');
+      expect(QUERIES.getAttestation).toContain('data');
+      expect(QUERIES.getAttestation).toContain('revoked');
     });
 
-    it('has getAttestationsBySchema query', () => {
+    it('getAttestationsBySchema queries attestations root field with schema filter', () => {
       expect(QUERIES.getAttestationsBySchema).toContain('$schemaId: String!');
       expect(QUERIES.getAttestationsBySchema).toContain('$take: Int');
+      expect(QUERIES.getAttestationsBySchema).toMatch(/attestations\s*\(/);
+      expect(QUERIES.getAttestationsBySchema).toContain('schemaId');
+      expect(QUERIES.getAttestationsBySchema).toContain('decodedDataJson');
     });
 
-    it('has getAttestationsByAttester query', () => {
+    it('getAttestationsByAttester queries attestations root field with attester filter', () => {
       expect(QUERIES.getAttestationsByAttester).toContain('$attester: String!');
+      expect(QUERIES.getAttestationsByAttester).toContain('$take: Int');
+      expect(QUERIES.getAttestationsByAttester).toMatch(/attestations\s*\(/);
+      expect(QUERIES.getAttestationsByAttester).toContain('decodedDataJson');
     });
 
-    it('has getSchemata query', () => {
+    it('getSchemata queries schemata root field with creator filter', () => {
       expect(QUERIES.getSchemata).toContain('$creator: String');
-      expect(QUERIES.getSchemata).toContain('schemata');
+      expect(QUERIES.getSchemata).toContain('$take: Int');
+      expect(QUERIES.getSchemata).toMatch(/schemata\s*\(/);
+      expect(QUERIES.getSchemata).toContain('schema');
+      expect(QUERIES.getSchemata).toContain('creator');
     });
   });
 });

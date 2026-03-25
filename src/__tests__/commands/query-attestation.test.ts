@@ -13,7 +13,7 @@ vi.mock('../../output.js', () => ({
 }));
 
 import { queryAttestationCommand } from '../../commands/query-attestation.js';
-import { graphqlQuery } from '../../graphql.js';
+import { graphqlQuery, QUERIES } from '../../graphql.js';
 import { output, handleError } from '../../output.js';
 
 describe('query-attestation command', () => {
@@ -30,7 +30,7 @@ describe('query-attestation command', () => {
 
     await runCommand(['-u', '0xatt']);
 
-    expect(graphqlQuery).toHaveBeenCalledWith('ethereum', expect.any(String), { id: '0xatt' });
+    expect(graphqlQuery).toHaveBeenCalledWith('ethereum', QUERIES.getAttestation, { id: '0xatt' });
     expect(output).toHaveBeenCalledWith({
       success: true,
       data: expect.objectContaining({ id: '0xatt', attester: '0xAttester' }),

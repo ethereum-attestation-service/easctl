@@ -46,6 +46,9 @@ describe('multi-attest command', () => {
 
     await runCommand(['-i', input]);
 
+    expect(mockEncodeData).toHaveBeenCalledWith([
+      { name: 'x', type: 'uint8', value: '1' },
+    ]);
     expect(mockMultiAttest).toHaveBeenCalledWith([
       {
         schema: '0xschema1',
@@ -106,6 +109,17 @@ describe('multi-attest command', () => {
     expect(attestData.revocable).toBe(false);
     expect(attestData.refUID).toBe('0xref');
     expect(attestData.value).toBe(500n);
+  });
+
+  it('passes SDK errors to handleError', async () => {
+    mockMultiAttest.mockRejectedValueOnce(new Error('tx failed'));
+    const input = JSON.stringify([
+      { schema: '0xschema1', data: [{ name: 'x', type: 'uint8', value: '1' }] },
+    ]);
+    await runCommand(['-i', input]);
+    expect(handleError).toHaveBeenCalledWith(expect.any(Error));
+    const err = (handleError as any).mock.calls[0][0] as Error;
+    expect(err.message).toBe('tx failed');
   });
 
   it('outputs uids and count on success', async () => {
