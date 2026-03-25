@@ -1,0 +1,127 @@
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+
+const mockWait = vi.fn();
+const mockMultiAttest = vi.fn().mockResolvedValue({ wait: mockWait });
+const mockClient = {
+  eas: { multiAttest: mockMultiAttest },
+  address: '0xAttester',
+};
+
+vi.mock('../../client.js', () => ({
+  createEASClient: vi.fn(() => mockClient),
+}));
+
+vi.mock('../../output.js', () => ({
+  output: vi.fn(),
+  handleError: vi.fn(),
+}));
+
+const mockEncodeData = vi.fn().mockReturnValue('0xencoded');
+
+vi.mock('@ethereum-attestation-service/eas-sdk', () => ({
+  SchemaEncoder: class MockSchemaEncoder {
+    encodeData = mockEncodeData;
+  },
+  NO_EXPIRATION: 0n,
+  ZERO_BYTES32: '0x0000000000000000000000000000000000000000000000000000000000000000',
+}));
+
+import { multiAttestCommand } from '../../commands/multi-attest.js';
+import { output, handleError } from '../../output.js';
+
+describe('multi-attest command', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mockWait.mockResolvedValue(['0xuid1', '0xuid2']);
+  });
+
+  async function runCommand(args: string[]) {
+    await multiAttestCommand.parseAsync(['node', 'test', ...args]);
+  }
+
+  it('processes single attestation input', async () => {
+    const input = JSON.stringify([
+      { schema: '0xschema1', data: [{ name: 'x', type: 'uint8', value: '1' }] },
+    ]);
+
+    await runCommand(['-i', input]);
+
+    expect(mockMultiAttest).toHaveBeenCalledWith([
+      {
+        schema: '0xschema1',
+        data: [
+          expect.objectContaining({
+            recipient: '0x0000000000000000000000000000000000000000',
+            expirationTime: 0n, // NO_EXPIRATION default
+            revocable: true,
+            refUID: '0x0000000000000000000000000000000000000000000000000000000000000000', // ZERO_BYTES32 default
+            data: '0xencoded',
+            value: 0n,
+          }),
+        ],
+      },
+    ]);
+  });
+
+  it('groups attestations by schema', async () => {
+    const input = JSON.stringify([
+      { schema: '0xschemaA', data: [{ name: 'x', type: 'uint8', value: '1' }] },
+      { schema: '0xschemaB', data: [{ name: 'y', type: 'uint8', value: '2' }] },
+      { schema: '0xschemaA', data: [{ name: 'x', type: 'uint8', value: '3' }] },
+    ]);
+
+    await runCommand(['-i', input]);
+
+    const groups = mockMultiAttest.mock.calls[0][0];
+    expect(groups).toHaveLength(2);
+    const groupA = groups.find((g: any) => g.schema === '0xschemaA');
+    expect(groupA.data).toHaveLength(2);
+  });
+
+  it('handles invalid JSON in --input', async () => {
+    await runCommand(['-i', 'not-json']);
+    expect(handleError).toHaveBeenCalledWith(expect.any(Error));
+    const err = (handleError as any).mock.calls[0][0] as Error;
+    expect(err.message).toContain('Invalid JSON in --input');
+  });
+
+  it('uses custom values when provided', async () => {
+    const input = JSON.stringify([
+      {
+        schema: '0xschema1',
+        recipient: '0xCustomRecipient',
+        expirationTime: '1700000000',
+        revocable: false,
+        refUID: '0xref',
+        value: '500',
+        data: [{ name: 'x', type: 'uint8', value: '1' }],
+      },
+    ]);
+
+    await runCommand(['-i', input]);
+
+    const attestData = mockMultiAttest.mock.calls[0][0][0].data[0];
+    expect(attestData.recipient).toBe('0xCustomRecipient');
+    expect(attestData.expirationTime).toBe(1700000000n);
+    expect(attestData.revocable).toBe(false);
+    expect(attestData.refUID).toBe('0xref');
+    expect(attestData.value).toBe(500n);
+  });
+
+  it('outputs uids and count on success', async () => {
+    const input = JSON.stringify([
+      { schema: '0xschema1', data: [{ name: 'x', type: 'uint8', value: '1' }] },
+    ]);
+
+    await runCommand(['-i', input]);
+
+    expect(output).toHaveBeenCalledWith({
+      success: true,
+      data: {
+        uids: ['0xuid1', '0xuid2'],
+        count: 2,
+        chain: 'ethereum',
+      },
+    });
+  });
+});
