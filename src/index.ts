@@ -21,7 +21,7 @@ import { clearKeyCommand } from './commands/clear-key.js';
 const program = new Command();
 
 program
-  .name('eas')
+  .name('easctl')
   .description('Ethereum Attestation Service CLI — create, revoke, and query attestations')
   .version(process.env.CLI_VERSION || '0.0.0-dev')
   .option('--json', 'Output results as JSON (useful for agents and scripting)')

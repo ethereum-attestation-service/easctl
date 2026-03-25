@@ -1,9 +1,9 @@
 {
-  "name": "@ethereum-attestation-service/eas-cli",
+  "name": "easctl",
   "version": "0.1.0",
   "description": "CLI tool for the Ethereum Attestation Service — create, revoke, and query attestations from the command line",
   "bin": {
-    "eas": "./dist/index.js"
+    "easctl": "./dist/index.js"
   },
   "scripts": {
     "build": "tsup",
