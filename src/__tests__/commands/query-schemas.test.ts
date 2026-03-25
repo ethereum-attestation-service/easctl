@@ -4,6 +4,7 @@ vi.mock('../../graphql.js', () => ({
   graphqlQuery: vi.fn(),
   QUERIES: {
     getSchemata: 'query GetSchemata',
+    getSchemataByCreator: 'query GetSchemataByCreator',
   },
 }));
 
@@ -27,21 +28,34 @@ describe('query-schemas command', () => {
     await querySchemasCommand.parseAsync(['node', 'test', ...args]);
   }
 
-  it('queries schemas by creator with default skip', async () => {
+  it('queries latest schemas without creator', async () => {
     (graphqlQuery as any).mockResolvedValue({
       schemata: [{ id: '0xs1', schema: 'uint256 x' }, { id: '0xs2', schema: 'string y' }],
     });
 
-    await runCommand(['-a', '0xCreator']);
+    await runCommand([]);
 
     expect(graphqlQuery).toHaveBeenCalledWith('ethereum', QUERIES.getSchemata, {
-      creator: '0xCreator',
       take: 10,
       skip: 0,
     });
     expect(output).toHaveBeenCalledWith({
       success: true,
       data: { count: 2, schemas: expect.any(Array) },
+    });
+  });
+
+  it('queries schemas by creator when provided', async () => {
+    (graphqlQuery as any).mockResolvedValue({
+      schemata: [{ id: '0xs1', schema: 'uint256 x' }],
+    });
+
+    await runCommand(['-a', '0xCreator']);
+
+    expect(graphqlQuery).toHaveBeenCalledWith('ethereum', QUERIES.getSchemataByCreator, {
+      creator: '0xCreator',
+      take: 10,
+      skip: 0,
     });
   });
 
@@ -52,7 +66,7 @@ describe('query-schemas command', () => {
 
     expect(graphqlQuery).toHaveBeenCalledWith(
       'ethereum',
-      QUERIES.getSchemata,
+      QUERIES.getSchemataByCreator,
       expect.objectContaining({ take: 50 })
     );
   });
@@ -64,7 +78,7 @@ describe('query-schemas command', () => {
 
     expect(graphqlQuery).toHaveBeenCalledWith(
       'ethereum',
-      QUERIES.getSchemata,
+      QUERIES.getSchemataByCreator,
       expect.objectContaining({ skip: 15 })
     );
   });
@@ -72,7 +86,7 @@ describe('query-schemas command', () => {
   it('returns empty results with count 0', async () => {
     (graphqlQuery as any).mockResolvedValue({ schemata: [] });
 
-    await runCommand(['-a', '0xCreator']);
+    await runCommand([]);
 
     expect(output).toHaveBeenCalledWith({
       success: true,
@@ -83,7 +97,7 @@ describe('query-schemas command', () => {
   it('handles missing schemata key in response', async () => {
     (graphqlQuery as any).mockResolvedValue({});
 
-    await runCommand(['-a', '0xCreator']);
+    await runCommand([]);
 
     expect(output).toHaveBeenCalledWith({
       success: true,
@@ -93,7 +107,7 @@ describe('query-schemas command', () => {
 
   it('passes GraphQL errors to handleError', async () => {
     (graphqlQuery as any).mockRejectedValue(new Error('network timeout'));
-    await runCommand(['-a', '0xCreator']);
+    await runCommand([]);
     const { handleError } = await import('../../output.js');
     expect(handleError).toHaveBeenCalledWith(expect.any(Error));
     const err = (handleError as any).mock.calls[0][0] as Error;
@@ -103,7 +117,7 @@ describe('query-schemas command', () => {
   it('uses specified chain', async () => {
     (graphqlQuery as any).mockResolvedValue({ schemata: [] });
 
-    await runCommand(['-a', '0xCreator', '-c', 'polygon']);
+    await runCommand(['-c', 'polygon']);
 
     expect(graphqlQuery).toHaveBeenCalledWith('polygon', QUERIES.getSchemata, expect.any(Object));
   });

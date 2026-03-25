@@ -137,12 +137,19 @@ describe('graphql module', () => {
       expect(QUERIES.getAttestationsByAttester).toContain('decodedDataJson');
     });
 
-    it('getSchemata queries schemata root field with creator filter', () => {
-      expect(QUERIES.getSchemata).toContain('$creator: String');
+    it('getSchemata queries schemata without creator filter', () => {
       expect(QUERIES.getSchemata).toContain('$take: Int');
       expect(QUERIES.getSchemata).toMatch(/schemata\s*\(/);
       expect(QUERIES.getSchemata).toContain('schema');
-      expect(QUERIES.getSchemata).toContain('creator');
+      expect(QUERIES.getSchemata).not.toContain('$creator');
+    });
+
+    it('getSchemataByCreator queries schemata with creator filter', () => {
+      expect(QUERIES.getSchemataByCreator).toContain('$creator: String!');
+      expect(QUERIES.getSchemataByCreator).toContain('$take: Int');
+      expect(QUERIES.getSchemataByCreator).toMatch(/schemata\s*\(/);
+      expect(QUERIES.getSchemataByCreator).toContain('schema');
+      expect(QUERIES.getSchemataByCreator).toContain('creator');
     });
   });
 });

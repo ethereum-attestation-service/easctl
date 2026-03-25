@@ -118,7 +118,22 @@ export const QUERIES = {
     }
   `,
   getSchemata: `
-    query GetSchemata($creator: String, $take: Int, $skip: Int) {
+    query GetSchemata($take: Int, $skip: Int) {
+      schemata(
+        take: $take
+        skip: $skip
+        orderBy: [{ time: desc }]
+      ) {
+        id
+        schema
+        creator
+        revocable
+        time
+      }
+    }
+  `,
+  getSchemataByCreator: `
+    query GetSchemataByCreator($creator: String!, $take: Int, $skip: Int) {
       schemata(
         where: { creator: { equals: $creator } }
         take: $take
