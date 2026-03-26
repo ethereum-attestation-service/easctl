@@ -3,11 +3,11 @@ import { SchemaEncoder, NO_EXPIRATION, ZERO_BYTES32 } from '@ethereum-attestatio
 import { createEASClient } from '../client.js';
 import { output, handleError } from '../output.js';
 import { resolveInput } from '../stdin.js';
-import { validateAddress, validateBytes32 } from '../validation.js';
+import { validateAddress, resolveAndValidateSchemaUID } from '../validation.js';
 
 export const attestCommand = new Command('attest')
   .description('Create an on-chain attestation')
-  .requiredOption('-s, --schema <uid>', 'Schema UID to attest with')
+  .requiredOption('-s, --schema <uid>', 'Schema UID or popular schema name')
   .requiredOption('-d, --data <json>', 'Attestation data as JSON array: [{"name":"field","type":"uint256","value":"123"}]')
   .option('-r, --recipient <address>', 'Recipient address', '0x0000000000000000000000000000000000000000')
   .option('--ref-uid <uid>', 'Referenced attestation UID', ZERO_BYTES32)
@@ -20,7 +20,7 @@ export const attestCommand = new Command('attest')
   .option('--dry-run', 'Estimate gas without sending the transaction')
   .action(async (opts) => {
     try {
-      validateBytes32(opts.schema, 'schema UID');
+      opts.schema = resolveAndValidateSchemaUID(opts.schema, 'schema UID');
       if (opts.recipient !== '0x0000000000000000000000000000000000000000') {
         validateAddress(opts.recipient, 'recipient');
       }

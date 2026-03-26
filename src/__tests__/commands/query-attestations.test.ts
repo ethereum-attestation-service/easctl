@@ -16,6 +16,7 @@ vi.mock('../../output.js', () => ({
 vi.mock('../../validation.js', () => ({
   validateAddress: vi.fn(),
   validateBytes32: vi.fn(),
+  resolveAndValidateSchemaUID: vi.fn((v: string) => v),
 }));
 
 import { queryAttestationsCommand } from '../../commands/query-attestations.js';

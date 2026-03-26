@@ -25,6 +25,7 @@ vi.mock('../../stdin.js', () => ({
 vi.mock('../../validation.js', () => ({
   validateAddress: vi.fn(),
   validateBytes32: vi.fn(),
+  resolveAndValidateSchemaUID: vi.fn((v: string) => v),
 }));
 
 const mockEncodeData = vi.fn().mockReturnValue('0xencoded');

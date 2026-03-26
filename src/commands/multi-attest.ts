@@ -3,6 +3,7 @@ import { SchemaEncoder, NO_EXPIRATION, ZERO_BYTES32 } from '@ethereum-attestatio
 import { createEASClient } from '../client.js';
 import { output, handleError } from '../output.js';
 import { resolveInput } from '../stdin.js';
+import { resolveSchemaUID } from '../popular-schemas.js';
 
 interface AttestationInput {
   schema: string;
@@ -34,6 +35,7 @@ export const multiAttestCommand = new Command('multi-attest')
       const grouped = new Map<string, { schema: string; data: any[] }>();
 
       for (const input of inputs) {
+        input.schema = resolveSchemaUID(input.schema);
         const schemaString = input.data.map((item) => `${item.type} ${item.name}`).join(', ');
         const encoder = new SchemaEncoder(schemaString);
         const encodedData = encoder.encodeData(input.data as any);

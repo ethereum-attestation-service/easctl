@@ -1,11 +1,11 @@
 import { Command } from 'commander';
 import { graphqlQuery, QUERIES } from '../graphql.js';
 import { output, handleError } from '../output.js';
-import { validateAddress, validateBytes32 } from '../validation.js';
+import { validateAddress, resolveAndValidateSchemaUID } from '../validation.js';
 
 export const queryAttestationsCommand = new Command('query-attestations')
   .description('Query attestations by schema or attester from the EAS GraphQL API')
-  .option('-s, --schema <uid>', 'Filter by schema UID')
+  .option('-s, --schema <uid>', 'Filter by schema UID or popular schema name')
   .option('-a, --attester <address>', 'Filter by attester address')
   .option('-n, --limit <number>', 'Max results to return', '10')
   .option('--skip <number>', 'Number of results to skip (for pagination)', '0')
@@ -15,7 +15,7 @@ export const queryAttestationsCommand = new Command('query-attestations')
       if (!opts.schema && !opts.attester) {
         throw new Error('Provide at least one filter: --schema or --attester');
       }
-      if (opts.schema) validateBytes32(opts.schema, 'schema UID');
+      if (opts.schema) opts.schema = resolveAndValidateSchemaUID(opts.schema, 'schema UID');
       if (opts.attester) validateAddress(opts.attester, 'attester');
 
       const take = parseInt(opts.limit, 10);

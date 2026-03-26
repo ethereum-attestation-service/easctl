@@ -17,6 +17,7 @@ import { multiRevokeCommand } from './commands/multi-revoke.js';
 import { multiTimestampCommand } from './commands/multi-timestamp.js';
 import { setKeyCommand } from './commands/set-key.js';
 import { clearKeyCommand } from './commands/clear-key.js';
+import { popularSchemasCommand } from './commands/popular-schemas.js';
 
 const program = new Command();
 
@@ -42,6 +43,7 @@ program.addCommand(getAttestationCommand);
 // Schema commands
 program.addCommand(schemaRegisterCommand);
 program.addCommand(schemaGetCommand);
+program.addCommand(popularSchemasCommand);
 
 // Timestamp commands
 program.addCommand(timestampCommand);

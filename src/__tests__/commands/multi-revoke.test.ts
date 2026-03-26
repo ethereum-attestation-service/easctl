@@ -21,6 +21,10 @@ vi.mock('../../stdin.js', () => ({
   resolveInput: vi.fn((v: string) => Promise.resolve(v)),
 }));
 
+vi.mock('../../popular-schemas.js', () => ({
+  resolveSchemaUID: vi.fn((v: string) => v),
+}));
+
 import { multiRevokeCommand } from '../../commands/multi-revoke.js';
 import { output, handleError } from '../../output.js';
 

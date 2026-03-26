@@ -28,6 +28,7 @@ vi.mock('../../stdin.js', () => ({
 }));
 
 vi.mock('../../validation.js', () => ({
+  resolveAndValidateSchemaUID: vi.fn((v: string) => v),
   validateAddress: vi.fn(),
   validateBytes32: vi.fn(),
 }));

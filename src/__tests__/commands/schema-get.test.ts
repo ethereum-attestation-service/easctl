@@ -21,6 +21,7 @@ vi.mock('../../output.js', () => ({
 
 vi.mock('../../validation.js', () => ({
   validateBytes32: vi.fn(),
+  resolveAndValidateSchemaUID: vi.fn((v: string) => v),
 }));
 
 import { schemaGetCommand } from '../../commands/schema-get.js';

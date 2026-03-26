@@ -1,11 +1,11 @@
 import { Command } from 'commander';
 import { createEASClient } from '../client.js';
 import { output, handleError } from '../output.js';
-import { validateBytes32 } from '../validation.js';
+import { validateBytes32, resolveAndValidateSchemaUID } from '../validation.js';
 
 export const revokeCommand = new Command('revoke')
   .description('Revoke an on-chain attestation')
-  .requiredOption('-s, --schema <uid>', 'Schema UID of the attestation')
+  .requiredOption('-s, --schema <uid>', 'Schema UID or popular schema name')
   .requiredOption('-u, --uid <uid>', 'Attestation UID to revoke')
   .option('--value <wei>', 'ETH value to send (in wei)', '0')
   .option('-c, --chain <name>', 'Chain name', 'ethereum')
@@ -13,7 +13,7 @@ export const revokeCommand = new Command('revoke')
   .option('--dry-run', 'Estimate gas without sending the transaction')
   .action(async (opts) => {
     try {
-      validateBytes32(opts.schema, 'schema UID');
+      opts.schema = resolveAndValidateSchemaUID(opts.schema, 'schema UID');
       validateBytes32(opts.uid, 'attestation UID');
 
       const client = createEASClient(opts.chain, opts.rpcUrl);

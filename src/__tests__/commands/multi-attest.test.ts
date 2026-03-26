@@ -22,6 +22,10 @@ vi.mock('../../stdin.js', () => ({
   resolveInput: vi.fn((v: string) => Promise.resolve(v)),
 }));
 
+vi.mock('../../popular-schemas.js', () => ({
+  resolveSchemaUID: vi.fn((v: string) => v),
+}));
+
 const mockEncodeData = vi.fn().mockReturnValue('0xencoded');
 
 vi.mock('@ethereum-attestation-service/eas-sdk', () => ({

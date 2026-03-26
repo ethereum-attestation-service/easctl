@@ -2,6 +2,7 @@ import { Command } from 'commander';
 import { createEASClient } from '../client.js';
 import { output, handleError } from '../output.js';
 import { resolveInput } from '../stdin.js';
+import { resolveSchemaUID } from '../popular-schemas.js';
 
 interface RevocationInput {
   schema: string;
@@ -29,6 +30,7 @@ export const multiRevokeCommand = new Command('multi-revoke')
       const grouped = new Map<string, { schema: string; data: any[] }>();
 
       for (const input of inputs) {
+        input.schema = resolveSchemaUID(input.schema);
         if (!grouped.has(input.schema)) {
           grouped.set(input.schema, { schema: input.schema, data: [] });
         }
